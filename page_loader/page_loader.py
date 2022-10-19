@@ -1,4 +1,4 @@
 def site_name(url: str) -> str:
-    b = url.replace('https://', '').replace('.', '-').replace('/', '-')
-    b = ''.join(b)
-    return b + '.html'
+    url = url.replace('https://', '').replace('.', '-').replace('/', '-')
+    url = ''.join(url)
+    return url + '.html'
