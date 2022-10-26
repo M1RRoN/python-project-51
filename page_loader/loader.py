@@ -1,5 +1,5 @@
 import requests
-from rename import get_path
+from page_loader.rename import get_path
 
 
 def download_site(url, dir_path):

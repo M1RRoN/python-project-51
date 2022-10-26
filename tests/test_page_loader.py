@@ -1,5 +1,5 @@
 import pytest
-from page_loader.page_loader import site_name
+from page_loader.loader import site_name
 
 
 def test_site_name():

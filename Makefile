@@ -7,6 +7,9 @@ publish:
 package-install:
 	python3 -m pip install --user dist/*.whl
 
+package-reinstall:
+	python3 -m pip install --force-reinstall dist/*.whl
+
 package-uninstall:
 	python3 -m pip uninstall --yes dist/*.whl
 
@@ -19,12 +22,5 @@ test-coverage:
 lint:
 	poetry run flake8 page_loader
 
-selfcheck:
-	poetry check
-
-check: selfcheck test lint
-
 build: check
 	poetry build
-
-.PHONY: install test lint selfcheck check build
