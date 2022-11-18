@@ -9,9 +9,9 @@ def save_data_to_file(data: Union[str, bytes],
         file.write(data)
 
 
-def save_page(data: str, file_path: Path) -> Callable[..., None]:
+def save_page(data: str, file_path: Path):
     save_data_to_file(data, file_path, 'w')
 
 
-def save_resource(data: bytes, file_path: Path) -> Callable[..., None]:
+def save_resource(data: bytes, file_path: Path):
     save_data_to_file(data, file_path, 'wb')

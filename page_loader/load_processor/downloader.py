@@ -25,7 +25,7 @@ along the path «{}» ...'
 FINISH_SAVE_RESOURCE: Final[str] = '[+] Resource {} saved successfully!'
 
 
-def download(url: str, destination: str = DEFAULT_DIR) -> str:
+def download(url: str, destination: str = DEFAULT_DIR):
     check_destination(destination)
     file_path = get_file_path(url, destination)
     dir_path = get_dir_path(url, destination)
@@ -45,7 +45,7 @@ def download(url: str, destination: str = DEFAULT_DIR) -> str:
     return str(file_path)
 
 
-def download_resource_pack(local_resources: List[Dict]) -> None:
+def download_resource_pack(local_resources: List[Dict]):
     logger.debug(START_RESOURCES_SAVING)
 
     progress = Progress(len(local_resources))
@@ -65,7 +65,7 @@ def download_resource_pack(local_resources: List[Dict]) -> None:
 
 
 def download_resource(resource: Dict[str, Union[str, Path]],
-                      progress: Progress) -> None:
+                      progress: Progress):
     logger.debug(START_SAVE_RESOURCE.format(resource['link'], resource['path']))
 
     content = load_page_content(resource['link'])
