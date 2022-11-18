@@ -26,23 +26,6 @@ TAGS_LINK_ATTRIBUTES: Final[Dict[str, str]] = {
 def process_resources(html: str,
                       page_url: str,
                       resources_path: Path) -> Tuple[str, List]:
-    '''
-    Description:
-    ---
-        Returns a parsed html with local resource references that it
-        downloads and places in a special directory if it doesn't exist.
-
-    Parameters:
-    ---
-        - html (str): Content of the page.
-        - page_url (str): Page being downloaded.
-        - resources_path (Path): Resources directory.
-
-    Return:
-    ---
-        html (str): Processed page content.
-        local_resources (list): List of local resources.
-    '''
     logger.debug(START_PARSING)
 
     soup = bs4.BeautifulSoup(html, 'html.parser')
@@ -75,13 +58,10 @@ def process_resources(html: str,
 
 
 def get_link_attribute(tag: bs4.element.Tag) -> str:
-    '''Returns the relevant source attribute for the selected tag,
-    for example 'img' -> 'src'.'''
     return TAGS_LINK_ATTRIBUTES[tag.name]
 
 
 def get_full_link(link: str, page_url: str) -> str:
-    '''Returns the full URL of the link.'''
     scheme = urlparse(page_url).scheme
     netloc = urlparse(page_url).netloc
     url_domain_address = f'{scheme}://{netloc}'
@@ -94,7 +74,6 @@ def get_full_link(link: str, page_url: str) -> str:
 
 
 def is_local_link(link: str, page_url: str) -> bool:
-    '''Checks if the resource is local to the downloaded page.'''
     rsc_netloc = urlparse(link).netloc
     url_netloc = urlparse(page_url).netloc
 

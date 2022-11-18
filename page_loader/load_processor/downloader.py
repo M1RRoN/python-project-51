@@ -26,23 +26,6 @@ FINISH_SAVE_RESOURCE: Final[str] = '[+] Resource {} saved successfully!'
 
 
 def download(url: str, destination: str = DEFAULT_DIR) -> str:
-    '''
-    Description:
-    ---
-        Downloads a page from the network
-        and puts it in the specified existing directory.
-
-    Parameters:
-    ---
-        - url (str): Page being downloaded.
-        ---
-        - destination (str): Output directory
-        (by default, to the program launch directory).
-
-    Return:
-    ---
-        file_path (str): Full path to the downloaded file.
-    '''
     check_destination(destination)
     file_path = get_file_path(url, destination)
     dir_path = get_dir_path(url, destination)
@@ -63,8 +46,6 @@ def download(url: str, destination: str = DEFAULT_DIR) -> str:
 
 
 def download_resource_pack(local_resources: List[Dict]) -> None:
-    '''Traverses a set of tags and downloads the contents
-    of their links to local storage.'''
     logger.debug(START_RESOURCES_SAVING)
 
     progress = Progress(len(local_resources))
@@ -85,7 +66,6 @@ def download_resource_pack(local_resources: List[Dict]) -> None:
 
 def download_resource(resource: Dict[str, Union[str, Path]],
                       progress: Progress) -> None:
-    '''Downloads the contents of a tag link to local storage.'''
     logger.debug(START_SAVE_RESOURCE.format(resource['link'], resource['path']))
 
     content = load_page_content(resource['link'])

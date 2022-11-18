@@ -15,7 +15,6 @@ a request for page {}.\nMake sure your input is correct and try again later.'
 
 
 def get_page_response(url: str) -> requests.Response:
-    '''Gets the response to a page request.'''
     logger.debug(REQUEST.format(url))
 
     try:
@@ -33,14 +32,12 @@ def get_page_response(url: str) -> requests.Response:
 
 
 def load_page_text(url: str) -> str:
-    '''Gets page.text from page.'''
     logger.debug(GETTING_TEXT.format(url))
     page = get_page_response(url)
     return page.text
 
 
 def load_page_content(url: str) -> bytes:
-    '''Gets page.content from page.'''
     logger.debug(GETTING_CONTENT.format(url))
     page = get_page_response(url)
     return page.content
