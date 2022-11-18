@@ -10,8 +10,6 @@ HYPHENS_AROUND: Final[re.Pattern] = re.compile(r'(^-*)|(-*$)')
 
 
 def create_resource_name(link: str) -> str:
-    '''Formats a resource link and returns a name for the storage file
-    (without the name of the storage directory).'''
     parsed_resource_link = parse_url(link, invert=True)
     netloc = parsed_resource_link['netloc']
     path = parsed_resource_link['path']
@@ -24,7 +22,6 @@ def create_resource_name(link: str) -> str:
 
 
 def get_base_name(url: str) -> str:
-    '''Generates a base name for datastores.'''
     url_map = parse_url(url, invert=True)
 
     netloc = url_map['netloc']
@@ -34,7 +31,6 @@ def get_base_name(url: str) -> str:
 
 
 def parse_url(url: str, invert: bool = False) -> Dict[str, str]:
-    '''Splits the URL into parts and converts them into a kebab-case view.'''
     parsed_url = urlparse(os.path.normcase(url))
     url_map = {
         'scheme': parsed_url.scheme,
@@ -52,7 +48,6 @@ def parse_url(url: str, invert: bool = False) -> Dict[str, str]:
 
 
 def invert_name(initial_name: str, key: str) -> str:
-    '''Converts part of a URL to a kebab case.'''
     processed_name = initial_name[key]
     if key == 'netloc':
         processed_name = re.sub(USER_PASSWORD, '', processed_name)
