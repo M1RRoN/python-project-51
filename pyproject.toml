@@ -1,26 +1,26 @@
 [tool.poetry]
 name = "hexlet-code"
 version = "0.1.0"
-description = ""
-authors = ["M1RRoN <mds.myst@gmail.com>"]
-readme = "README.md"
+description = "Page loader"
+authors = ["Mironov Denis <mds.myst@gmail.com>"]
 packages = [
-    {include = "page_loader"}
+  { include = "page_loader" },
 ]
 
 [tool.poetry.dependencies]
-python = "^3.8"
-requests = "^2.28.1"
+python = "^3.10"
+requests = "^2.27.1"
 bs4 = "^0.0.1"
+progress = "^1.6"
 
 [tool.poetry.dev-dependencies]
 flake8 = "^4.0.1"
-pytest = "^7.0.1"
 pytest-cov = "^3.0.0"
-requests-mock = "^1.10.0"
+mock = "^4.0.3"
+requests-mock = "^1.9.3"
 
 [build-system]
-requires = ["poetry-core"]
+requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
