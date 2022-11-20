@@ -1,4 +1,5 @@
 import os
+from bs4 import BeautifulSoup
 from pathlib import Path
 from urllib.parse import urlparse, urljoin
 from typing import List, Dict, Tuple, Final, Optional
@@ -25,7 +26,7 @@ def process_resources(html: str,
                       resources_path: Path) -> Tuple[str, List]:
     logger.debug(START_PARSING)
 
-    soup = bs4.BeautifulSoup(html, 'html.parser')
+    soup = BeautifulSoup(html, 'html.parser')
     target_tags = soup.find_all(TAGS_LINK_ATTRIBUTES.keys())
 
     local_resources = []
@@ -54,7 +55,7 @@ def process_resources(html: str,
     return html, local_resources
 
 
-def get_link_attribute(tag: bs4.element.Tag) -> str:
+def get_link_attribute(tag) -> str:
     return TAGS_LINK_ATTRIBUTES[tag.name]
 
 
