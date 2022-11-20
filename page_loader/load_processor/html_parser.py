@@ -2,9 +2,6 @@ import os
 from pathlib import Path
 from urllib.parse import urlparse, urljoin
 from typing import List, Dict, Tuple, Final, Optional
-
-import bs4
-
 from page_loader.load_processor.name_converter import create_resource_name
 from page_loader.logger import logger
 
