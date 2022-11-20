@@ -29,7 +29,7 @@ lxml = ["lxml"]
 
 [[package]]
 name = "bs4"
-version = "0.0.1"
+version = "4.10.0"
 description = "Dummy package for Beautiful Soup"
 category = "main"
 optional = false
