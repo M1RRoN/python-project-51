@@ -1,5 +1,5 @@
 import os
-import bs4
+from bs4 import BeautifulSoup
 from pathlib import Path
 from urllib.parse import urlparse, urljoin
 from typing import List, Dict, Tuple, Final, Optional
