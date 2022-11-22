@@ -4,7 +4,7 @@ import os
 import pytest
 import tempfile
 import requests
-from bautifulsoup4 import BeautifulSoup
+from bs4 import BeautifulSoup
 from unittest.mock import Mock
 from page_loader import prepare_data, downloader
 from page_loader.prepare_data import make_name, make_soup, prepare_resources
