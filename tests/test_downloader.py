@@ -4,7 +4,6 @@ import os
 import pytest
 import tempfile
 import requests
-from bs4 import BeautifulSoup
 from unittest.mock import Mock
 from page_loader import prepare_data, downloader
 from page_loader.prepare_data import make_name, make_soup, prepare_resources
@@ -38,12 +37,6 @@ PREPARED_RESOURCES = (
 def read_file(path: str, flag='r'):
     with open(path, flag) as file:
         return file.read()
-
-
-def test_make_soup(before_html_path, urls, requests_mock):
-    requests_mock.get(urls['ok_url'], text='')
-    soup = make_soup(urls['ok_url'])
-    assert type(soup) == BeautifulSoup
 
 
 def test_make_name(urls):
@@ -99,16 +92,6 @@ def test_download(urls, file_paths,
             assert f.read() == js_content
 
         assert not os.path.exists(os.path.join(tmpdirname, not_exists_content))
-
-
-def test_prepare_resources(before_html_path, urls):
-
-    soup = BeautifulSoup(read_file(before_html_path), "html.parser")
-    prepare_data.make_soup = Mock(return_value=soup)
-    prepare_data.write_to_file = Mock()
-
-    prepared_resources = prepare_resources(urls['ok_url'])
-    assert prepared_resources == PREPARED_RESOURCES
 
 
 @pytest.mark.parametrize('code', [403, 404, 501])
