@@ -55,7 +55,4 @@ Specify only the existing directory!
 
 
 ### Example installation and operation of the utility
-[![asciicast](https://asciinema.org/a/5hayAnLleOEQ5JE1oGHvHm860.svg)](https://asciinema.org/a/5hayAnLleOEQ5JE1oGHvHm860)
-
-### Error examples:
-[![asciicast](https://asciinema.org/a/LposXXTRmZjwdC5EzXnkf7mO0.svg)](https://asciinema.org/a/LposXXTRmZjwdC5EzXnkf7mO0)
+[![asciicast](https://asciinema.org/a/qnUIAj57Nb1rL9XSH9SvBHtbp)
