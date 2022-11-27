@@ -1,115 +1,89 @@
-import os
 import pytest
+import os
+from page_loader.url import to_filename
+from page_loader.page_loader import download
+import tempfile
 import requests
-from page_loader.urls import make_name_from_url
+import requests_mock
+from page_loader.resources import prepare_data, is_desired_link
+from tests import FIXTURES_PATH
 
-from tests import get_fixture_path, read_file
-from page_loader import download
-
-FIXTURES_HEXLET_IO = [
-    {
-        'path_file': (
-            'expected',
-            'ru-hexlet-io-courses_files',
-            'ru-hexlet-io-lessons.rss'),
-        'url': 'https://ru.hexlet.io/about/lessons.rss'
-    },
-    {
-        'path_file': (
-            'expected',
-            'ru-hexlet-io-courses_files',
-            'ru-hexlet-io-courses.html'),
-        'url': 'https://ru.hexlet.io/courses'
-    }
-]
-FIXTURES_SITE_COM = [
-    {
-        'path_file': (
-            'expected',
-            'site-com-blog-about_files',
-            'site-com-blog-about-assets-styles.css'),
-        'url': 'https://site.com/blog/about/assets/styles.css'
-    },
-    {
-        'path_file': (
-            'expected',
-            'site-com-blog-about_files',
-            'site-com-blog-about.html'),
-        'url': 'https://site.com/blog/about'
-    },
-    {
-        'path_file': (
-            'expected',
-            'site-com-blog-about_files',
-            'site-com-photos-me.jpg'),
-        'url': 'https://site.com/photos/me.jpg'
-    },
-    {
-        'path_file': (
-            'expected',
-            'site-com-blog-about_files',
-            'site-com-assets-scripts.js'),
-        'url': 'https://site.com/assets/scripts.js'
-    }
+URL = 'https://page-loader.hexlet.repl.co/'
+MEDIA_FILES = [
+    ('https://page-loader.hexlet.repl.co/assets/professions/nodejs.png',
+        f"{FIXTURES_PATH}/fixture_img.png"),
+    ('https://page-loader.hexlet.repl.co/assets/application.css',
+     f"{FIXTURES_PATH}/fixture_css.css"),
+    ('https://page-loader.hexlet.repl.co/script.js',
+        f"{FIXTURES_PATH}/fixture_scripts.js"),
+    ('https://page-loader.hexlet.repl.co/courses',
+        f"{FIXTURES_PATH}/fixture_courses.txt")
 ]
 
 
-def test_non_existent_directory(requests_mock):
-    with pytest.raises(FileNotFoundError):
-        data = read_file('tests/fixtures/ru-hexlet-io-courses.html')
-        requests_mock.get('https://ru.hexlet.io/courses', text=data)
-        download('https://ru.hexlet.io/courses', '/undefined')
+@pytest.mark.parametrize('original, expected',
+                         [('original_html.html', 'prettify_html.html')])
+def test_download(original, expected):
+    html_original = read(f"{FIXTURES_PATH}/{original}", 'r')
+    html_expected = read(f"{FIXTURES_PATH}/{expected}", 'r')
+
+    with requests_mock.Mocker() as mock, tempfile.TemporaryDirectory() as tmpdir:
+        resources = MEDIA_FILES
+        mock.get(URL, text=html_original)
+        for url, path in resources:
+            content = read(path, 'rb')
+            mock.get(url, content=content)
+        download(URL, tmpdir)
+        actual_html = read(os.path.join(tmpdir, to_filename(URL)), 'r')
+        assert actual_html == html_expected
+        assert mock.call_count == 5
 
 
-def test_non_existent_site(requests_mock):
-    with pytest.raises(Exception):
-        requests_mock.get(
-            'https://ru.hexlettt.io/courses',
-            exc=requests.RequestException)
-        download('https://ru.hexlettt.io/courses')
+@pytest.mark.parametrize('original, expected',
+                         [('original_html.html', 'prettify_html.html')])
+def test_prepare_data(original, expected):
+    html_original = read(f"{FIXTURES_PATH}/{original}", 'r')
+    html_expected = read(f"{FIXTURES_PATH}/{expected}", 'r')
+
+    with requests_mock.Mocker() as mock:
+        mock.get(URL, text=html_original)
+        resources, html = prepare_data(URL)
+        expected_resources = [
+            ('/assets/professions/nodejs.png',
+             'page-loader-hexlet-repl-co-_files/page-loader-hexlet-repl-co-assets-professions-nodejs.png'),
+            ('/assets/application.css',
+             'page-loader-hexlet-repl-co-_files/page-loader-hexlet-repl-co-assets-application.css'),
+            ('/courses',
+             'page-loader-hexlet-repl-co-_files/page-loader-hexlet-repl-co-courses.html'),
+            ('/script.js',
+             'page-loader-hexlet-repl-co-_files/page-loader-hexlet-repl-co-script.js')
+        ]
+        assert html_expected == html
+        assert expected_resources == resources
 
 
-@pytest.mark.parametrize(
-    "fixtures, site_url, count_files",
-    [
-        pytest.param(
-            FIXTURES_HEXLET_IO,
-            'https://ru.hexlet.io/courses',
-            2,
-            id="hexlet_io"
-        ),
-        pytest.param(
-            FIXTURES_SITE_COM,
-            'https://site.com/blog/about',
-            4,
-            id="site_com"
-        )
-    ]
-)
-def test_download(
-        fixtures,
-        site_url,
-        count_files,
-        tmp_path,
-        requests_mock):
-    for fixture in fixtures:
-        expected_fixture_content = get_fixture_path(*fixture['path_file'])
-        data_content = read_file(expected_fixture_content, 'rb')
-        requests_mock.get(fixture['url'], content=data_content)
+def read(file_path, mode):
+    with open(file_path, mode) as data:
+        return data.read()
 
-    expected_file_path = make_name_from_url(site_url, site_url)
 
-    expected_html_path = get_fixture_path('expected', expected_file_path)
-    expected_html_content = read_file(expected_html_path)
+def test_exception():
+    with pytest.raises(Exception) as e:
+        download('https://notexist.com')
 
-    initial_file_html = get_fixture_path(expected_file_path)
-    initial_data = read_file(initial_file_html)
+        assert str(e.value) == requests.RequestException
 
-    requests_mock.get(site_url, text=initial_data)
 
-    recieved_path_after_download = download(site_url, tmp_path)
-    downloaded_html_content = read_file(recieved_path_after_download)
-    name_dir = make_name_from_url(site_url, site_url, is_dir=True)
-    count_files = len(next(os.walk(get_fixture_path(tmp_path, name_dir)))[2])
-    assert downloaded_html_content == expected_html_content
-    assert count_files == count_files
+def test_directory_not_exist():
+    try:
+        download(URL, 'some_dir')
+    except FileNotFoundError:
+        print("Directory 'some_dir' doesn't exist")
+
+
+@pytest.mark.parametrize('mediafile_url, page_url',
+                         [('/assets/professions/nodejs.png', 'https://page-loader.hexlet.repl.co/'),
+                          ('/assets/application.css', 'https://page-loader.hexlet.repl.co/')]
+                         )
+def test_is_desired_link(mediafile_url, page_url):
+    assert is_desired_link(mediafile_url, page_url)

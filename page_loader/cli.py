@@ -4,11 +4,10 @@ import os
 
 def parse():
     parser = argparse.ArgumentParser(
-        description='downloads page from the network and puts it in the '
-                    'specified existing directory'
-    )
-    parser.add_argument('URL')
+        prog='page_loader',
+        description='utility that downloads a web page and data')
+    parser.add_argument('url', help='URL of the page you want to download')
     parser.add_argument('-o', '--output',
                         default=os.getcwd(),
-                        help='set path output')
+                        help='output directory (default: current dir)')
     return parser.parse_args()

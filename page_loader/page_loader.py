@@ -1,27 +1,53 @@
 import os
 import requests
-from pathlib import Path
-from progress.bar import Bar
-from page_loader.html_processing import prepare_html_and_media_files
-from page_loader.urls import make_name_from_url
-from page_loader.file import write_data_to_file
+import logging
+from page_loader.url import to_filename
+from page_loader.resources import prepare_data
+from urllib.parse import urljoin
+from progress.bar import IncrementalBar
 
 
-def download_media_files(urls_and_paths: list[dict]):
-    if urls_and_paths:
-        for url_and_path in Bar('Processing').iter(urls_and_paths):
-            response = requests.get(url_and_path.get('url'))
-            response.raise_for_status()
-            write_data_to_file(response.content, url_and_path.get('path'),
-                               'wb')
-
-
-def download(url: str, output_path: [str, Path] = os.getcwd()) -> str:
-    if not os.path.isdir(output_path):
+def download(url, dir_path=os.getcwd()):
+    """Download html and resources from url"""
+    if not os.path.exists(dir_path):
+        logging.info(f"Directory {dir_path} doesn't exist."
+                     f" Please, choose another directory.")
         raise FileNotFoundError
-    full_path_page = os.path.join(output_path, make_name_from_url(url, url))
-    urls_and_paths, file_full_path = prepare_html_and_media_files(url,
-                                                                  output_path)
-    download_media_files(urls_and_paths)
-    write_data_to_file(file_full_path, full_path_page, 'w+')
-    return full_path_page
+    path_to_html = os.path.join(dir_path, to_filename(url))
+    resources, html = prepare_data(url, dir_path)
+    download_resources(resources, url, dir_path)
+    logging.info(f'Downloading html from {url}')
+    with open(path_to_html, 'w') as f:
+        f.write(html)
+    return path_to_html
+
+
+def download_resources(resources, url, dir_path):
+    if len(resources) == 0:
+        logging.info(f'No resources to download from {url}')
+        return
+    logging.info(f'Downloading resources from {url}')
+    with IncrementalBar(
+            'Downloading:',
+            max=len(resources),
+            suffix='%(percent).1f%% - %(eta)ds'
+    ) as bar:
+        try:
+            for resource in resources:
+                bar.next()
+                resource_url, resource_path = resource
+                download_resource(url, resource_url, resource_path, dir_path)
+        except Exception as e:
+            cause_info = (e.__class__, e, e.__traceback__)
+            logging.info(str(e), exc_info=cause_info)
+            logging.error(
+                f"Page resource {resource} wasn't downloaded"
+            )
+
+
+def download_resource(url, resource_url, resource_path, dir_path):
+    fullpath = os.path.join(dir_path, resource_path)
+    src = urljoin(url, resource_url)
+    response = requests.get(src, stream=True)
+    with open(fullpath, 'wb') as out_file:
+        out_file.write(response.content)
