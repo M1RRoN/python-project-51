@@ -1,123 +1,89 @@
-"""Test downloader"""
-
 import os
+from pathlib import Path
+
 import pytest
-import tempfile
 import requests
-from bs4 import BeautifulSoup
-from unittest.mock import Mock
-from page_loader import prepare_data, downloader
-from page_loader.prepare_data import make_name, make_soup, prepare_resources
-from page_loader.in_out import create_dir
+from requests_mock.mocker import Mocker
 
-HTML_URL = "/courses"
-PNG_URL = "/assets/professions/nodejs.png"
-CSS_URL = "/assets/application.css"
-JS_URL = "/script.js"
-MOCK_URL = "https://cdn2.page-loader.hexlet.repl.co/blog/assets/style.css"
-
-FILENAMES = {
-    "html_mock": "page-loader-hexlet-repl-co-courses.html",
-    "png_mock": "page-loader-hexlet-repl-co-assets-professions-nodejs.png",
-    "css_mock": "page-loader-hexlet-repl-co-assets-application.css",
-    "js_mock": "page-loader-hexlet-repl-co-script.js",
-}
-
-DIR_NAME = "page-loader-hexlet-repl-co_files"
-
-PREPARED_RESOURCES = (
-    [('/assets/application.css', 'page-loader-hexlet-repl-co_files/page-loader-hexlet-repl-co-assets-application.css'),
-     ('/courses', 'page-loader-hexlet-repl-co_files/page-loader-hexlet-repl-co-courses.html'),
-     ('/assets/professions/nodejs.png', 'page-loader-hexlet-repl-co_files/page-loader-hexlet-repl-co-assets-professions-nodejs.png'),
-     ('/script.js', 'page-loader-hexlet-repl-co_files/page-loader-hexlet-repl-co-script.js')
-     ],
-    'page-loader-hexlet-repl-co.html'
-)
+from page_loader.load_processor.downloader import download
+from page_loader.load_processor.data_loader import load_page_text
+from page_loader.load_processor.name_converter import create_resource_name
+from tests.auxiliary import read_file, HTML_NAME, HTML_URL, HTML_FIXTURE, \
+    CSS_NAME, CSS_URL, CSS_FIXTURE, IMAGE_NAME, IMAGE_URL, IMAGE_FIXTURE, \
+    INNER_HTML_NAME, INNER_HTML_URL, INNER_HTML_FIXTURE, \
+    JS_NAME, JS_URL, JS_FIXTURE, SOURCE_PAGE, DIRECTORY_NAME
 
 
-def read_file(path: str, flag='r'):
-    with open(path, flag) as file:
-        return file.read()
+def test_download(requests_mock: Mocker, tmp_path: Path):
+    requests_mock.get(HTML_URL, text=read_file(SOURCE_PAGE))
+    requests_mock.get(CSS_URL, text=read_file(CSS_FIXTURE))
+    requests_mock.get(IMAGE_URL, content=read_file(IMAGE_FIXTURE, 'rb'))
+    requests_mock.get(INNER_HTML_URL, text=read_file(INNER_HTML_FIXTURE))
+    requests_mock.get(JS_URL, text=read_file(JS_FIXTURE))
+
+    # Проверка страницы...
+
+    expected_path = os.path.join(tmp_path, HTML_NAME)
+    received_path = download(HTML_URL, tmp_path)
+
+    assert received_path == expected_path
+
+    expected_content = read_file(HTML_FIXTURE)
+    received_content = read_file(received_path)
+
+    assert received_content == expected_content
+
+    # Проверка ресурсов...
+
+    resource_dir = os.path.join(tmp_path, DIRECTORY_NAME)
+
+    assert os.path.exists(resource_dir)
+
+    expected_css = read_file(CSS_FIXTURE, flag='r')
+    received_css = read_file(os.path.join(resource_dir, CSS_NAME), flag='r')
+
+    assert received_css == expected_css
+
+    expected_inner_html = read_file(INNER_HTML_FIXTURE, flag='r')
+    received_inner_html = read_file(os.path.join(resource_dir, INNER_HTML_NAME), flag='r')  # noqa: E501
+
+    assert received_inner_html == expected_inner_html
+
+    expected_image = read_file(IMAGE_FIXTURE, flag='rb')
+    received_image = read_file(os.path.join(resource_dir, IMAGE_NAME), flag='rb')  # noqa: E501
+
+    assert received_image == expected_image
+
+    expected_js = read_file(JS_FIXTURE, flag='r')
+    received_js = read_file(os.path.join(resource_dir, JS_NAME), flag='r')
+
+    assert received_js == expected_js
 
 
-def test_make_soup(before_html_path, urls, requests_mock):
-    requests_mock.get(urls['ok_url'], text='')
-    soup = make_soup(urls['ok_url'])
-    assert type(soup) == BeautifulSoup
+@pytest.mark.parametrize('link, resource_name', [
+    (
+        'https://page-loader.hexlet.repl.co/courses',
+        'page-loader-hexlet-repl-co-courses.html'
+    ),
+    (
+        'https://page-loader.hexlet.repl.co/assets/application.css',
+        'page-loader-hexlet-repl-co-assets-application.css'
+    ),
+    (
+        'https://page-loader.hexlet.repl.co/assets/professions/nodejs.png',
+        'page-loader-hexlet-repl-co-assets-professions-nodejs.png'
+    ),
+    (
+        'https://page-loader.hexlet.repl.co/script.js',
+        'page-loader-hexlet-repl-co-script.js'
+    )
+])
+def test_create_resource_name(link, resource_name):
+    assert create_resource_name(link) == resource_name
 
 
-def test_make_name(urls):
-    https_url = urls['ok_url']
-    assert make_name(https_url, ".html") == 'page-loader-hexlet-repl-co.html'
-    assert make_name(https_url, "_files") == 'page-loader-hexlet-repl-co_files'
-
-
-def test_create_dir():
-    with tempfile.TemporaryDirectory() as tempdir:
-        create_dir(tempdir)
-        assert os.path.exists(tempdir)
-        assert not os.path.exists("none")
-
-
-def test_download(urls, file_paths,
-                  before_html_path,
-                  result_html_path,
-                  requests_mock):
-    prepare_data.prepare_resources = Mock(return_value=PREPARED_RESOURCES)
-    before_html_content = read_file(before_html_path)
-    html_content = read_file(file_paths[0])
-    png_content = read_file(file_paths[1], 'rb')
-    css_content = read_file(file_paths[2])
-    js_content = read_file(file_paths[3], 'rb')
-    not_exists_content = 'none'
-
-    requests_mock.get(HTML_URL, text=html_content)
-    requests_mock.get(PNG_URL, content=png_content)
-    requests_mock.get(CSS_URL, text=css_content)
-    requests_mock.get(JS_URL, content=js_content)
-    requests_mock.get(MOCK_URL, text=not_exists_content)
-    requests_mock.get(urls['ok_url'], text=before_html_content)
-
-    with tempfile.TemporaryDirectory() as tmpdirname:
-        downloader.download(urls['ok_url'], tmpdirname)
-        dir_path = os.path.join(tmpdirname, DIR_NAME)
-
-        for file_name in FILENAMES.values():
-            file_path = os.path.join(tmpdirname, DIR_NAME, file_name)
-            assert os.path.exists(file_path)
-
-        with open(os.path.join(dir_path, FILENAMES["html_mock"])) as f:
-            assert f.read() == html_content
-
-        with open(os.path.join(dir_path, FILENAMES["png_mock"]), 'rb') as f:
-            assert f.read() == png_content
-
-        with open(os.path.join(dir_path, FILENAMES["css_mock"])) as f:
-            assert f.read() == css_content
-
-        with open(os.path.join(dir_path, FILENAMES["js_mock"]), 'rb') as f:
-            assert f.read() == js_content
-
-        assert not os.path.exists(os.path.join(tmpdirname, not_exists_content))
-
-
-def test_prepare_resources(before_html_path, urls):
-
-    soup = BeautifulSoup(read_file(before_html_path), "html.parser")
-    prepare_data.make_soup = Mock(return_value=soup)
-    prepare_data.write_to_file = Mock()
-
-    prepared_resources = prepare_resources(urls['ok_url'])
-    assert prepared_resources == PREPARED_RESOURCES
-
-
-@pytest.mark.parametrize('code', [403, 404, 501])
-def test_repsonse_errors(urls, code, requests_mock):
-    requests_mock.get(urls['ok_url'], status_code=code)
-    response = requests.get(urls['ok_url'])
-    assert response.status_code == code
-
-
-def test_make_soup_exceptions(urls):
-    with pytest.raises(Exception):
-        make_soup(urls['bad_url'])
+def test_get_response_with_error_status(requests_mock: Mocker):
+    url = 'https://example.com'
+    requests_mock.get(url, status_code=404)
+    with pytest.raises(requests.exceptions.RequestException):
+        load_page_text(url)
