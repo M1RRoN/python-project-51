@@ -6,8 +6,7 @@ from page_loader.relevant_url import get_valid_tags, TAGS
 from page_loader.urls import make_name_from_url
 
 
-def prepare_html_and_media_files(url: str, output_path: str) -> (
-        list[dict], str):
+def prepare_html_and_media_files(url: str, output_path: str):
     response = requests.get(url)
     response.raise_for_status()
     soup = BeautifulSoup(response.content, 'html.parser')
