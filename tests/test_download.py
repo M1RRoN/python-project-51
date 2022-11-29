@@ -23,7 +23,7 @@ MEDIA_FILES = [
 
 @pytest.mark.parametrize('original, expected',
                          [('original_html.html', 'prettify_html.html')])
-def test_download(requests_mock, tmpdir, original, expected):
+def test_download(tmpdir, original, expected):
     html_original = read(f"{FIXTURES_PATH}/{original}", 'r')
     html_expected = read(f"{FIXTURES_PATH}/{expected}", 'r')
 
