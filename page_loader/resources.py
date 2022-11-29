@@ -32,14 +32,14 @@ def prepare_data(url, dir_path=os.getcwd()):
             if tag_name.get(attribute) is not None
         ]
         resources.extend(tags_wanted)
-    resource_pair = []
+    resource_pairs = []
     for tag, attribute in resources:
         if is_desired_link(tag.get(attribute), url):
             tag_link = tag.get(attribute)
             resource_name = to_filename(url, tag[attribute])
             tag[attribute] = os.path.join(resource_path, resource_name)
-            resource_pair.append((tag_link, tag[attribute]))
-    return resource_pair, page.prettify()
+            resource_pairs.append((tag_link, tag[attribute]))
+    return resource_pairs, page.prettify()
 
 
 def is_desired_link(mediafile_url, page_url):

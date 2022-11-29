@@ -6,17 +6,15 @@ from page_loader.cli import parse
 import logging
 
 
-logging.basicConfig(level=logging.INFO)
-
-
 def main():
+    logging.basicConfig(level=logging.INFO)
     try:
         args = parse()
-        result = download(
+        html_path = download(
             args.url,
             args.output
         )
-        print(result)
+        print(html_path)
     except Exception as ex:
         logging.error(ex)
         logging.info('Page not found or status_code is not 200')
