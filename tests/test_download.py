@@ -85,11 +85,3 @@ def test_directory_not_exist():
                          )
 def test_is_desired_link(mediafile_url, page_url):
     assert is_desired_link(mediafile_url, page_url)
-
-
-def test_non_existent_site(requests_mock):
-    with pytest.raises(Exception):
-        requests_mock.get(
-            'https://ru.hexlettt.io/courses',
-            exc=requests.RequestException)
-        download('https://ru.hexlettt.io/courses')
