@@ -22,6 +22,14 @@ def test_to_dir(url, expected_dir_name):
                           ('https://page-loader.hexlet.repl.co/',
                            'https://page-loader.hexlet.repl.co/assets/application.css',
                            'page-loader-hexlet-repl-co-assets-application.css',
+                           ),
+                          ('https://google.com/',
+                           '/nodejs.png',
+                           'google-com-nodejs.png'
+                           ),
+                          ('https://google.com/',
+                           'https://google.com/assets/application.css',
+                           'google-com-assets-application.css',
                            )
                           ])
 def test_to_resource_name(url, resource_path, expected_name):

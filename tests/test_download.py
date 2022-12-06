@@ -23,7 +23,7 @@ MEDIA_FILES = [
 
 @pytest.mark.parametrize('original, expected',
                          [('original_html.html', 'prettify_html.html')])
-def test_download(tmpdir, original, expected):
+def test_download(original, expected):
     html_original = read(f"{FIXTURES_PATH}/{original}", 'r')
     html_expected = read(f"{FIXTURES_PATH}/{expected}", 'r')
 
@@ -85,3 +85,11 @@ def test_directory_not_exist():
                          )
 def test_is_desired_link(mediafile_url, page_url):
     assert is_desired_link(mediafile_url, page_url)
+
+
+@pytest.mark.parametrize('mediafile_url, page_url',
+                         [('/assets/professions/nodejs.png', 'https://page-loader.hexlet.repl.co/'),
+                          ('/assets/application.css', 'https://page-loader.hexlet.repl.co/')]
+                         )
+def test_is_wrong_link(mediafile_url, page_url):
+    assert mediafile_url != page_url
