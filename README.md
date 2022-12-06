@@ -16,7 +16,7 @@ Downloads page from the network and puts it with local resources in the specifie
 
 
 ```bash
-$ git clone https://github.com/zhek111/python-project-51/
+$ git clone https://github.com/M1RRoN/python-project-51/
 ```
 
 Use make (Makefile):
