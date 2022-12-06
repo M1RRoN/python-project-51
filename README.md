@@ -115,4 +115,4 @@ Specify only the existing directory!
 
 ### Example installation and operation of the utility
 [![asciicast](https://asciinema.org/a/qnUIAj57Nb1rL9XSH9SvBHtbp.svg)](https://asciinema.org/a/qnUIAj57Nb1rL9XSH9SvBHtbp)
->>>>>>> 4cd0f06226e3787f2ba54563fb86183787321970
+
